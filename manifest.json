@@ -1,0 +1,18 @@
+{
+    "manifest_version": 3,
+    "name": "Password Game Helper",
+    "description": "View the contents of your password much easier",
+    "version": "1.0",
+    "action": {
+      "default_popup": "hello.html",
+      "default_icon": "image.png"
+    },
+    "content_scripts": [ 
+        {
+          "js": ["scripts/passwordGameHelper.js"],
+          "matches": [
+            "https://neal.fun/password-game/"
+          ]
+        }
+      ]
+  }
