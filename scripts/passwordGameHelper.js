@@ -53,15 +53,20 @@ if(element) {
     const observer = new MutationObserver(() => {
         let text = getTextFromChildren(element);
         let elements = searchElements(text);
-        console.log(text);
 
-        infoParagraph.textContent = "Elements: " + elements;
+        if(elements)
+            infoParagraph.textContent = "Elements: " + elements;
+
+        console.log(getWordleAnswer());
     });
     
     const config = { attributes: true, childList: true, subtree: true };
     
     observer.observe(element, config);
 }
+
+
+
 
 const periodicTable = [
     { "symbol": "He", "atomicNumber": 2 },
@@ -190,4 +195,14 @@ function searchElements(string) {
     const elementPattern = symbols.join('|');
     const elementRegex = new RegExp(elementPattern, 'g');
     return string.match(elementRegex);
+}
+
+async function getWordleAnswer() {
+    try {
+        const t = new Date();
+        const response = await fetch("https://neal.fun/api/password-game/wordle?date=" + t.getFullYear() + "-" + String(t.getMonth() + 1).padStart(2, "0") + "-" + String(t.getDate()).padStart(2, "0"));
+        return await response.json();
+    } catch (error) {
+        return null;
+    }
 }
