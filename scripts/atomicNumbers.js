@@ -120,8 +120,8 @@ const periodicTable = [
 ]
 
 export default function searchElements(query) {
-    const regex = new RegExp(`^${query}$`); // Case-insensitive regex
+    const regex = new RegExp(`^${query}$`);
     return periodicTable.filter(element => 
-        regex.test(element.name) || regex.test(element.symbol) || regex.test(element.atomicNumber.toString())
+        regex.test(element.symbol)
     );
 }
