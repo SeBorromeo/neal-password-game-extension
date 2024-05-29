@@ -53,6 +53,7 @@ function getTextFromChildren(element) {
 }
 
 const processedRules = new Set();
+const errorRules = new Set();
 
 //
 function createRuleObserver(rulesContainer) {
@@ -61,45 +62,99 @@ function createRuleObserver(rulesContainer) {
             if (mutation.type === 'childList') {
                 for (const node of mutation.addedNodes) {
                     if (node.nodeType === Node.ELEMENT_NODE &&
+                        node.querySelector('.rule') &&
                         !processedRules.has(node.firstChild.className)
                     ) {
                         processedRules.add(node.firstChild.className);
+                        console.log('gang');
+
+                        const rule = ruleHelperFunctions.some(ruleHelper => ruleHelper.ruleNum === processedRules.size);
+                        if(rule) 
+                            addRuleHelperDiv(processedRules.size);
                     }
                 }
             }
         }
+
+        findErrorRules();
     });
 
-    const config = { childList: true, subtree: false };
+    const config = { attributes: true, attributeFilter: ['class'], childList: true, subtree: true };
         
     observer.observe(rulesContainer, config);
 }
 
-function startHelper() {
-    const helperContainer = createHelperContainer();
-    const infoParagraph = helperContainer.querySelector('p');
+function findErrorRules() {
+    Array.from(rulesContainer.children).forEach((rule) => {
+        const innerRuleDiv = rule.querySelector('div.rule');
+        if(innerRuleDiv.classList.contains('rule-error')) {
+            errorRules.add(innerRuleDiv.classList[2]);
+        }
+        else {
+            errorRules.delete(innerRuleDiv.classList[1]);
+        }
+    });
+}
 
+function addRuleHelperDiv(ruleNum) {
+    const ruleDiv = document.createElement("div");
+    ruleDiv.className = `rule${ruleNum}`;
+
+    helperContainer.appendChild(ruleDiv);
+}
+
+function calculateDigits() {
+
+}
+
+function calculateElements() {
+
+    return;
+}
+
+function displayWordle() {
+    console.log(getWordleAnswer());
+}
+
+function displayMoonPhase() {
+    return;
+}
+
+function atomicNumbers(text) {
+
+}
+
+function displayRomanNumerals() {
+    let romanNumerals = searchRomanNumerals(text);
+
+    console.log(romanNumerals);
+}
+
+const ruleHelperFunctions = [
+    {id: 'digits', ruleNum: 5, ruleFunction: calculateDigits},
+    {id: 'wordle', ruleNum: 11, ruleFunction: displayWordle},
+    {id: 'moon-phase', ruleNum: 13, ruleFunction: displayMoonPhase},
+    {id: 'atomic-numbers', ruleNum: 18, ruleFunction: atomicNumbers},
+]
+
+const helperContainer = createHelperContainer();
+const infoParagraph = helperContainer.querySelector('p');
+
+const passwordWrapper = document.querySelector('div.password-wrapper');
+const rulesContainer = passwordWrapper.lastElementChild.firstElementChild;
+
+function startHelper() {
     addHelperContainer(helperContainer);
 
     const proseMirror = document.querySelector('div.ProseMirror');
     if(proseMirror) {
         const observer = new MutationObserver(() => {
             let text = getTextFromChildren(proseMirror);
+
             let elements = searchElements(text);
-            let romanNumerals = searchRomanNumerals(text);
-
-            const passwordWrapper = document.querySelector('div.password-wrapper');
-            const rulesContainer = passwordWrapper.lastElementChild.firstElementChild;
-
-            createRuleObserver(rulesContainer);
-
-            console.log(rulesContainer.childElementCount);
-            console.log(romanNumerals);
 
             if(elements)
                 infoParagraph.textContent = "Elements: " + elements;
-
-            console.log(getWordleAnswer());
         });
         
         const config = { attributes: true, childList: true, subtree: true };
@@ -109,6 +164,9 @@ function startHelper() {
 }
 
 startHelper();
+createRuleObserver(rulesContainer);
+
+const romanNumerals = ['I', 'V', 'X', 'L', 'C', 'D', 'M']
 
 const periodicTable = [
     { "symbol": "He", "atomicNumber": 2 },
