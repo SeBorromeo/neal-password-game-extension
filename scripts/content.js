@@ -1,34 +1,40 @@
-const helperContainer = document.createElement("div");
-helperContainer.id = "helperContainer";
-helperContainer.className = "helperContainer";
-helperContainer.innerHTML = `
-    <h2>The Password Game Helper</h2>
-    <p className="info-text"></p><br/>
+function createHelperContainer() {
+    const helperContainer = document.createElement("div");
+    helperContainer.id = "helperContainer";
+    helperContainer.className = "helperContainer";
+    helperContainer.innerHTML = `
+        <h2>The Password Game Helper</h2>
+        <p className="info-text"></p><br/>
 
-    <p>Created by Sebastian Borromeo</p>
-`;
+        <p className="credits">Created by Sebastian Borromeo</p>
+    `;
 
-helperContainer.style.display = "block";
-helperContainer.style.flexGrow = "1";
-helperContainer.style.margin = "167px 20px 60px";
-helperContainer.style.padding = "20px";
-helperContainer.style.border = "1px solid #9d9d9d";
-helperContainer.style.borderRadius = "10px";
-helperContainer.style.backgroundColor = "white";
+    helperContainer.style.display = "block";
+    helperContainer.style.flexGrow = "1";
+    helperContainer.style.margin = "167px 20px 60px";
+    helperContainer.style.padding = "20px";
+    helperContainer.style.border = "1px solid #9d9d9d";
+    helperContainer.style.borderRadius = "10px";
+    helperContainer.style.backgroundColor = "white";
 
-const passwordWrapper = document.querySelector('div.password-wrapper');
-passwordWrapper.style.margin = "167px 50px 60px";
-passwordWrapper.style.flexGrow = "1";
+    return helperContainer;
+}
 
-const oldParentContainer = passwordWrapper.parentElement;
+function addHelperContainer(helperContainer) {
+    const passwordWrapper = document.querySelector('div.password-wrapper');
+    passwordWrapper.style.margin = "167px 50px 60px";
+    passwordWrapper.style.flexGrow = "1";
 
-const passwordHelperContainer = document.createElement('div');
-passwordHelperContainer.appendChild(passwordWrapper);
-passwordHelperContainer.appendChild(helperContainer);
+    const oldParentContainer = passwordWrapper.parentElement;
 
-passwordHelperContainer.style.display = "flex";
+    const passwordHelperContainer = document.createElement('div');
+    passwordHelperContainer.appendChild(passwordWrapper);
+    passwordHelperContainer.appendChild(helperContainer);
 
-oldParentContainer.prepend(passwordHelperContainer);
+    passwordHelperContainer.style.display = "flex";
+
+    oldParentContainer.prepend(passwordHelperContainer);
+}
 
 function getTextFromChildren(element) {
     let textContent = '';
@@ -46,27 +52,63 @@ function getTextFromChildren(element) {
     return textContent.trim();
 }
 
-const element = document.querySelector('div.ProseMirror');
-const infoParagraph = helperContainer.querySelector('p');
+const processedRules = new Set();
 
-if(element) {
-    const observer = new MutationObserver(() => {
-        let text = getTextFromChildren(element);
-        let elements = searchElements(text);
-
-        if(elements)
-            infoParagraph.textContent = "Elements: " + elements;
-
-        console.log(getWordleAnswer());
+//
+function createRuleObserver(rulesContainer) {
+    const observer = new MutationObserver((mutationsList) => {
+        for (const mutation of mutationsList) {
+            if (mutation.type === 'childList') {
+                for (const node of mutation.addedNodes) {
+                    if (node.nodeType === Node.ELEMENT_NODE &&
+                        !processedRules.has(node.firstChild.className)
+                    ) {
+                        processedRules.add(node.firstChild.className);
+                    }
+                }
+            }
+        }
     });
-    
-    const config = { attributes: true, childList: true, subtree: true };
-    
-    observer.observe(element, config);
+
+    const config = { childList: true, subtree: false };
+        
+    observer.observe(rulesContainer, config);
 }
 
+function startHelper() {
+    const helperContainer = createHelperContainer();
+    const infoParagraph = helperContainer.querySelector('p');
 
+    addHelperContainer(helperContainer);
 
+    const proseMirror = document.querySelector('div.ProseMirror');
+    if(proseMirror) {
+        const observer = new MutationObserver(() => {
+            let text = getTextFromChildren(proseMirror);
+            let elements = searchElements(text);
+            let romanNumerals = searchRomanNumerals(text);
+
+            const passwordWrapper = document.querySelector('div.password-wrapper');
+            const rulesContainer = passwordWrapper.lastElementChild.firstElementChild;
+
+            createRuleObserver(rulesContainer);
+
+            console.log(rulesContainer.childElementCount);
+            console.log(romanNumerals);
+
+            if(elements)
+                infoParagraph.textContent = "Elements: " + elements;
+
+            console.log(getWordleAnswer());
+        });
+        
+        const config = { attributes: true, childList: true, subtree: true };
+        
+        observer.observe(proseMirror, config);
+    }
+}
+
+startHelper();
 
 const periodicTable = [
     { "symbol": "He", "atomicNumber": 2 },
@@ -187,12 +229,12 @@ const periodicTable = [
     { "symbol": "N", "atomicNumber": 7 },
     { "symbol": "O", "atomicNumber": 8 },
     { "symbol": "F", "atomicNumber": 9 },
-]
+];
 
-const symbols = periodicTable.map(element => element.symbol);
+const periodicTableSymbols = periodicTable.map(element => element.symbol);
 
 function searchElements(string) {
-    const elementPattern = symbols.join('|');
+    const elementPattern = periodicTableSymbols.join('|');
     const elementRegex = new RegExp(elementPattern, 'g');
     return string.match(elementRegex);
 }
@@ -206,3 +248,11 @@ async function getWordleAnswer() {
         return null;
     }
 }
+
+function searchRomanNumerals(string) {
+    const romanNumeralRegex = /(?=[MDCLXVI])M{0,3}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})/g;
+    return string.match(romanNumeralRegex);
+}
+
+// Rule Observer
+

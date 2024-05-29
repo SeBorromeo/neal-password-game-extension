@@ -9,7 +9,7 @@
     },
     "content_scripts": [ 
         {
-          "js": ["scripts/passwordGameHelper.js"],
+          "js": ["scripts/content.js"],
           "matches": [
             "https://neal.fun/password-game/"
           ]
