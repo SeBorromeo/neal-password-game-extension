@@ -11,6 +11,7 @@ function createHelperContainer() {
 
     helperContainer.style.display = "block";
     helperContainer.style.flexGrow = "1";
+    helperContainer.style.maxWidth = "60%"
     helperContainer.style.margin = "167px 20px 60px";
     helperContainer.style.padding = "20px";
     helperContainer.style.border = "1px solid #9d9d9d";
@@ -63,9 +64,9 @@ function createRuleObserver(rulesContainer) {
                 for (const node of mutation.addedNodes) {
                     if (node.nodeType === Node.ELEMENT_NODE &&
                         node.querySelector('.rule') &&
-                        !processedRules.has(node.firstChild.className)
+                        !processedRules.has(node.firstElementChild.classList[node.firstElementChild.classList.length - 1])
                     ) {
-                        processedRules.add(node.firstChild.className);
+                        processedRules.add(node.firstElementChild.classList[node.firstElementChild.classList.length - 1]);
 
                         const rule = ruleHelperFunctions.find(ruleHelper => ruleHelper.ruleNum === processedRules.size);
                         if(rule) 
@@ -112,9 +113,7 @@ function addRuleHelperDivs() {
                     <img data-v-520e375b="" src="/password-game/error.svg" class="rule-icon">
                     Rule ${rule.ruleNum}
                 </div>
-                <div class='rule-desc' data-v-520e375b>
-
-                </div>
+                <div class='rule-desc' data-v-520e375b style='white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;'/>
             </div>
         `
         ruleDiv.style.display = 'none';
@@ -129,7 +128,8 @@ function addRuleHelperDivs() {
 function calculateDigits() {
     const regex = /\d/g;
     const digits = text.match(regex);
-    return "Digits: " + digits + "\nCurrent Total: " + digits.reduce((acc, curr) => +acc + +curr, 0);
+    const total = digits.reduce((acc, curr) => +acc + +curr, 0);
+    return `Digits: ${digits}\nCurrent Total: ${total}\n${(total > 25 ? `(Subtract ${total - 25})` : `(Add ${25 - total})`)}`;
 }
 
 function calculateElements() {
@@ -187,6 +187,7 @@ function startHelper() {
             ruleHelperFunctions.forEach((rule) => {
                 if(errorRules.has(rule.id)) {
                     const content = rule.ruleFunction(text);
+
                     rule.div.lastElementChild.lastElementChild.textContent = content;
                 }
             });
@@ -336,7 +337,7 @@ async function getWordleAnswer() {
     try {
         const t = new Date();
         const response = await fetch("https://neal.fun/api/password-game/wordle?date=" + t.getFullYear() + "-" + String(t.getMonth() + 1).padStart(2, "0") + "-" + String(t.getDate()).padStart(2, "0"));
-        return await response.json();
+        return await response.json().then(answer => {return answer;});
     } catch (error) {
         return null;
     }
