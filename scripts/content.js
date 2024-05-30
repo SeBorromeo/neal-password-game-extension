@@ -56,7 +56,6 @@ function getTextFromChildren(element) {
 const processedRules = new Set();
 const errorRules = new Set();
 
-//
 function createRuleObserver(rulesContainer) {
     const observer = new MutationObserver((mutationsList) => {
         for (const mutation of mutationsList) {
@@ -87,17 +86,21 @@ function createRuleObserver(rulesContainer) {
 function findErrorRules() {
     Array.from(rulesContainer.children).forEach((rule) => {
         const innerRuleDiv = rule.querySelector('div.rule');
-        if(innerRuleDiv.classList.contains('rule-error')) {
-            errorRules.add(innerRuleDiv.classList[2]);
-            
-            const currentRule = ruleHelperFunctions.find((rule) => {return rule.id === innerRuleDiv.classList[2]});
-            if(currentRule) {
-                const content = currentRule.ruleFunction();
-                currentRule.div.lastElementChild.lastElementChild.textContent = content;
+        const ruleClass = innerRuleDiv.classList[innerRuleDiv.classList.length - 1];
+        const currentRule = ruleHelperFunctions.find((rule) => {return rule.id === ruleClass});
+
+        if(currentRule) {
+            console.log(ruleClass)
+            if(innerRuleDiv.classList.contains('rule-error')) {
+                errorRules.add(ruleClass);
+                currentRule.div.style.display = 'block';
+                
+                currentRule.ruleFunction(currentRule.div.lastElementChild.lastElementChild);
             }
-        }
-        else {
-            errorRules.delete(innerRuleDiv.classList[1]);
+            else {
+                errorRules.delete(ruleClass);
+                currentRule.div.style.display = 'none';
+            }
         }
     });
 }
@@ -119,40 +122,37 @@ function addRuleHelperDivs() {
         ruleDiv.style.display = 'none';
 
         helperContainer.appendChild(ruleDiv);
-
         rule.div = ruleDiv;
-        // rule.div = ruleDiv.querySelector('.rule-desc');
     });
 }
 
-function calculateDigits() {
+function calculateDigits(div) {
     const regex = /\d/g;
     const digits = text.match(regex);
     const total = digits.reduce((acc, curr) => +acc + +curr, 0);
-    return `Digits: ${digits}\nCurrent Total: ${total}\n${(total > 25 ? `(Subtract ${total - 25})` : `(Add ${25 - total})`)}`;
+    div.textContent = `Digits: ${digits}\nCurrent Total: ${total}\n${(total > 25 ? `(Subtract ${total - 25})` : `(Add ${25 - total})`)}`;
 }
 
-function calculateElements() {
+function calculateElements(div) {
 
     return;
 }
 
-function displayWordle() {
-    return getWordleAnswer();
+function displayWordle(div) {
+    getWordleAnswer().then(data => {div.textContent = `Answer: ${data.answer}`});
 }
 
-function displayMoonPhase() {
-    return;
+function displayMoonPhase(div) {
+    div.textContent = 'Copy/Paste: 🌕🌖🌗🌘🌑🌒🌓🌔'
 }
 
 function atomicNumber() {
 
 }
 
-function displayRomanNumerals() {
+function displayRomanNumerals(div) {
     let romanNumerals = searchRomanNumerals(text);
-
-    console.log(romanNumerals);
+    div.textContent = romanNumerals;
 }
 
 const ruleHelperFunctions = [
@@ -185,11 +185,8 @@ function startHelper() {
                 infoParagraph.textContent = "Elements: " + elements;
 
             ruleHelperFunctions.forEach((rule) => {
-                if(errorRules.has(rule.id)) {
-                    const content = rule.ruleFunction(text);
-
-                    rule.div.lastElementChild.lastElementChild.textContent = content;
-                }
+                if(errorRules.has(rule.id))
+                    rule.ruleFunction(rule.div.lastElementChild.lastElementChild);
             });
         });
         
@@ -337,7 +334,7 @@ async function getWordleAnswer() {
     try {
         const t = new Date();
         const response = await fetch("https://neal.fun/api/password-game/wordle?date=" + t.getFullYear() + "-" + String(t.getMonth() + 1).padStart(2, "0") + "-" + String(t.getDate()).padStart(2, "0"));
-        return await response.json().then(answer => {return answer;});
+        return await response.json();
     } catch (error) {
         return null;
     }
