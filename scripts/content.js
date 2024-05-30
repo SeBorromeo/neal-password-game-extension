@@ -66,11 +66,10 @@ function createRuleObserver(rulesContainer) {
                         !processedRules.has(node.firstChild.className)
                     ) {
                         processedRules.add(node.firstChild.className);
-                        console.log('gang');
 
-                        const rule = ruleHelperFunctions.some(ruleHelper => ruleHelper.ruleNum === processedRules.size);
+                        const rule = ruleHelperFunctions.find(ruleHelper => ruleHelper.ruleNum === processedRules.size);
                         if(rule) 
-                            addRuleHelperDiv(processedRules.size);
+                            rule.div.style.display = 'block';
                     }
                 }
             }
@@ -89,6 +88,12 @@ function findErrorRules() {
         const innerRuleDiv = rule.querySelector('div.rule');
         if(innerRuleDiv.classList.contains('rule-error')) {
             errorRules.add(innerRuleDiv.classList[2]);
+            
+            const currentRule = ruleHelperFunctions.find((rule) => {return rule.id === innerRuleDiv.classList[2]});
+            if(currentRule) {
+                const content = currentRule.ruleFunction();
+                currentRule.div.lastElementChild.lastElementChild.textContent = content;
+            }
         }
         else {
             errorRules.delete(innerRuleDiv.classList[1]);
@@ -96,15 +101,35 @@ function findErrorRules() {
     });
 }
 
-function addRuleHelperDiv(ruleNum) {
-    const ruleDiv = document.createElement("div");
-    ruleDiv.className = `rule${ruleNum}`;
+function addRuleHelperDivs() {
+    ruleHelperFunctions.forEach((rule) => {
+        const ruleDiv = document.createElement("div");
+        ruleDiv.className = `rule rule-error ${rule.id}`;
+        ruleDiv.setAttribute('data-v-520e375b', '');
+        ruleDiv.innerHTML = `
+            <div class='rule-inner' data-v-520e375b>
+                <div class='rule-top' data-v-520e375b>
+                    <img data-v-520e375b="" src="/password-game/error.svg" class="rule-icon">
+                    Rule ${rule.ruleNum}
+                </div>
+                <div class='rule-desc' data-v-520e375b>
 
-    helperContainer.appendChild(ruleDiv);
+                </div>
+            </div>
+        `
+        ruleDiv.style.display = 'none';
+
+        helperContainer.appendChild(ruleDiv);
+
+        rule.div = ruleDiv;
+        // rule.div = ruleDiv.querySelector('.rule-desc');
+    });
 }
 
 function calculateDigits() {
-
+    const regex = /\d/g;
+    const digits = text.match(regex);
+    return "Digits: " + digits + "\nCurrent Total: " + digits.reduce((acc, curr) => +acc + +curr, 0);
 }
 
 function calculateElements() {
@@ -113,14 +138,14 @@ function calculateElements() {
 }
 
 function displayWordle() {
-    console.log(getWordleAnswer());
+    return getWordleAnswer();
 }
 
 function displayMoonPhase() {
     return;
 }
 
-function atomicNumbers(text) {
+function atomicNumber() {
 
 }
 
@@ -134,7 +159,7 @@ const ruleHelperFunctions = [
     {id: 'digits', ruleNum: 5, ruleFunction: calculateDigits},
     {id: 'wordle', ruleNum: 11, ruleFunction: displayWordle},
     {id: 'moon-phase', ruleNum: 13, ruleFunction: displayMoonPhase},
-    {id: 'atomic-numbers', ruleNum: 18, ruleFunction: atomicNumbers},
+    {id: 'atomic-number', ruleNum: 18, ruleFunction: atomicNumber},
 ]
 
 const helperContainer = createHelperContainer();
@@ -143,18 +168,28 @@ const infoParagraph = helperContainer.querySelector('p');
 const passwordWrapper = document.querySelector('div.password-wrapper');
 const rulesContainer = passwordWrapper.lastElementChild.firstElementChild;
 
+var text = '';
+
 function startHelper() {
     addHelperContainer(helperContainer);
+    addRuleHelperDivs();
 
     const proseMirror = document.querySelector('div.ProseMirror');
     if(proseMirror) {
         const observer = new MutationObserver(() => {
-            let text = getTextFromChildren(proseMirror);
+            text = getTextFromChildren(proseMirror);
 
             let elements = searchElements(text);
 
             if(elements)
                 infoParagraph.textContent = "Elements: " + elements;
+
+            ruleHelperFunctions.forEach((rule) => {
+                if(errorRules.has(rule.id)) {
+                    const content = rule.ruleFunction(text);
+                    rule.div.lastElementChild.lastElementChild.textContent = content;
+                }
+            });
         });
         
         const config = { attributes: true, childList: true, subtree: true };
