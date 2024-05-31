@@ -90,7 +90,6 @@ function findErrorRules() {
         const currentRule = ruleHelperFunctions.find((rule) => {return rule.id === ruleClass});
 
         if(currentRule) {
-            console.log(ruleClass)
             if(innerRuleDiv.classList.contains('rule-error')) {
                 errorRules.add(ruleClass);
                 currentRule.div.style.display = 'block';
@@ -129,13 +128,15 @@ function addRuleHelperDivs() {
 function calculateDigits(div) {
     const regex = /\d/g;
     const digits = text.match(regex);
-    const total = digits.reduce((acc, curr) => +acc + +curr, 0);
-    div.textContent = `Digits: ${digits}\nCurrent Total: ${total}\n${(total > 25 ? `(Subtract ${total - 25})` : `(Add ${25 - total})`)}`;
+    var total = 0;
+    if(digits)
+        total = digits.reduce((acc, curr) => +acc + +curr, 0);
+
+    div.textContent = `Digits: ${digits || 'None'}\nCurrent Total: ${total}\n${(total > 25 ? `(Subtract ${total - 25})` : `(Add ${25 - total})`)}`;
 }
 
-function calculateElements(div) {
-
-    return;
+function displayCaptcha(div) {
+    div.textContent = 'HINT: Recommended to keep rerolling until you get a CAPTCHA without numbers';
 }
 
 function displayWordle(div) {
@@ -146,8 +147,48 @@ function displayMoonPhase(div) {
     div.textContent = 'Copy/Paste: 🌕🌖🌗🌘🌑🌒🌓🌔'
 }
 
-function atomicNumber() {
+function displayLeapYear(div) {
+    div.textContent = 'HINT: Recommmended to just use \'0\' as the leap year';
+}
 
+function calculateAtomicNumber(div) {
+    function findSuggestedElements(currentAtomicSum) {
+        if(currentAtomicSum >= 200)
+            return 'Sum is equal to or over 200. Remove some elements';
+
+        function containsRomanNumeral(array) {
+            const pattern = new RegExp(`[${romanNumerals.join('')}]`);
+            return array.some(element => pattern.test(element));
+        }
+
+        const difference = 200 - currentAtomicSum;
+
+        const element = periodicTable.find(periodicElement => periodicElement.atomicNumber === difference);
+
+        var suggestedElements = [element?.symbol];
+        var count = 1;
+        while(suggestedElements.includes(undefined) || containsRomanNumeral(suggestedElements)) {
+            const element1 = periodicTable.find(periodicElement => periodicElement.atomicNumber === count);
+            const element2 = periodicTable.find(periodicElement => periodicElement.atomicNumber === (difference - count));
+            suggestedElements = [element1?.symbol, element2?.symbol];
+            count++;
+        }
+        return suggestedElements;
+    }
+
+    const elements = searchElements(text);
+
+    let atomicSum = 0;
+    let result = '';
+    elements.forEach((element) => {
+        atomicNumber = periodicTable.find(periodicElement => periodicElement.symbol === element).atomicNumber;
+        atomicSum += atomicNumber;
+        result += `${element} - ${atomicNumber}, `
+    });
+
+    const suggestedElements = findSuggestedElements(atomicSum);
+
+    div.textContent = `Elements: ${result}\nCurrent Sum of Atomic Numbers: ${atomicSum}\nSuggested Elements: ${suggestedElements}`
 }
 
 function displayRomanNumerals(div) {
@@ -155,11 +196,29 @@ function displayRomanNumerals(div) {
     div.textContent = romanNumerals;
 }
 
+function offerExtinguisher(div) {
+    return;
+}
+
+function warnAboutHatchedEgg(div) {
+    div.textContent = '🐛';
+}
+
+function findYoutubeVideo(div) {
+    div.textContent = '';
+}
+
 const ruleHelperFunctions = [
     {id: 'digits', ruleNum: 5, ruleFunction: calculateDigits},
+    {id: 'roman-multiply', ruleNum: 9, ruleFunction: displayRomanNumerals},
+    {id: 'captcha', ruleNum: 10, ruleFunction: displayCaptcha},
     {id: 'wordle', ruleNum: 11, ruleFunction: displayWordle},
     {id: 'moon-phase', ruleNum: 13, ruleFunction: displayMoonPhase},
-    {id: 'atomic-number', ruleNum: 18, ruleFunction: atomicNumber},
+    {id: 'leap-year', ruleNum: 15, ruleFunction: displayLeapYear},
+    {id: 'atomic-number', ruleNum: 18, ruleFunction: calculateAtomicNumber},
+    {id: 'fire', ruleNum: 20, ruleFunction: offerExtinguisher},
+    {id: 'hatch', ruleNum: 23, ruleFunction: warnAboutHatchedEgg},
+    {id: 'youtube', ruleNum: 24, ruleFunction: findYoutubeVideo},
 ]
 
 const helperContainer = createHelperContainer();
@@ -178,11 +237,6 @@ function startHelper() {
     if(proseMirror) {
         const observer = new MutationObserver(() => {
             text = getTextFromChildren(proseMirror);
-
-            let elements = searchElements(text);
-
-            if(elements)
-                infoParagraph.textContent = "Elements: " + elements;
 
             ruleHelperFunctions.forEach((rule) => {
                 if(errorRules.has(rule.id))
@@ -344,6 +398,3 @@ function searchRomanNumerals(string) {
     const romanNumeralRegex = /(?=[MDCLXVI])M{0,3}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})/g;
     return string.match(romanNumeralRegex);
 }
-
-// Rule Observer
-
