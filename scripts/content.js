@@ -123,6 +123,9 @@ function addRuleHelperDivs() {
 
         helperContainer.appendChild(ruleDiv);
         rule.div = ruleDiv;
+
+        if(!rule.update)
+            rule.ruleFunction(ruleDiv.lastElementChild.lastElementChild);
     });
 }
 
@@ -223,7 +226,7 @@ function findYoutubeVideo(div) {
 }
 
 function displayLettersToSacrifice(div) {
-    
+
 }
 
 function displayHex(div) {
