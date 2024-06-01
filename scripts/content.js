@@ -94,7 +94,8 @@ function findErrorRules() {
                 errorRules.add(ruleClass);
                 currentRule.div.style.display = 'block';
                 
-                currentRule.ruleFunction(currentRule.div.lastElementChild.lastElementChild);
+                if(currentRule.update)
+                    currentRule.ruleFunction(currentRule.div.lastElementChild.lastElementChild);
             }
             else {
                 errorRules.delete(ruleClass);
@@ -148,7 +149,7 @@ function displayMoonPhase(div) {
 }
 
 function displayLeapYear(div) {
-    div.textContent = 'HINT: Recommmended to just use \'0\' as the leap year';
+    div.textContent = 'HINT: Recommmended to use \'0\' as the leap year';
 }
 
 function calculateAtomicNumber(div) {
@@ -193,11 +194,24 @@ function calculateAtomicNumber(div) {
 
 function displayRomanNumerals(div) {
     let romanNumerals = searchRomanNumerals(text);
-    div.textContent = romanNumerals;
+    div.textContent = `Current Roman Numerals: ${romanNumerals}`;
+}
+
+function removeFireEmoji(node) {
+    if (node.nodeType === Node.TEXT_NODE) {
+        node.textContent = node.textContent.replace(new RegExp('🔥', 'g'), '');
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+        for (let child of node.childNodes) {
+            removeFireEmoji(child, '🔥');
+        }
+    }
 }
 
 function offerExtinguisher(div) {
-    return;
+    var button = document.createElement("button");
+    button.innerHTML = "<h1>Extinguish</h1>";
+    button.onclick = () => {removeFireEmoji(proseMirror)};
+    div.appendChild(button);
 }
 
 function warnAboutHatchedEgg(div) {
@@ -208,17 +222,27 @@ function findYoutubeVideo(div) {
     div.textContent = '';
 }
 
+function displayLettersToSacrifice(div) {
+    
+}
+
+function displayHex(div) {
+
+}
+
 const ruleHelperFunctions = [
-    {id: 'digits', ruleNum: 5, ruleFunction: calculateDigits},
-    {id: 'roman-multiply', ruleNum: 9, ruleFunction: displayRomanNumerals},
-    {id: 'captcha', ruleNum: 10, ruleFunction: displayCaptcha},
+    {id: 'digits', ruleNum: 5, ruleFunction: calculateDigits, update: true},
+    {id: 'roman-multiply', ruleNum: 9, ruleFunction: displayRomanNumerals, update: true},
+    {id: 'captcha', ruleNum: 10, ruleFunction: displayCaptcha, update: true},
     {id: 'wordle', ruleNum: 11, ruleFunction: displayWordle},
     {id: 'moon-phase', ruleNum: 13, ruleFunction: displayMoonPhase},
     {id: 'leap-year', ruleNum: 15, ruleFunction: displayLeapYear},
-    {id: 'atomic-number', ruleNum: 18, ruleFunction: calculateAtomicNumber},
+    {id: 'atomic-number', ruleNum: 18, ruleFunction: calculateAtomicNumber, update: true},
     {id: 'fire', ruleNum: 20, ruleFunction: offerExtinguisher},
     {id: 'hatch', ruleNum: 23, ruleFunction: warnAboutHatchedEgg},
     {id: 'youtube', ruleNum: 24, ruleFunction: findYoutubeVideo},
+    {id: 'sacrafice', ruleNum: 25, ruleFunction: displayLettersToSacrifice},
+    {id: 'hex', ruleNum: 28, ruleFunction: displayHex, update: true},
 ]
 
 const helperContainer = createHelperContainer();
@@ -227,19 +251,20 @@ const infoParagraph = helperContainer.querySelector('p');
 const passwordWrapper = document.querySelector('div.password-wrapper');
 const rulesContainer = passwordWrapper.lastElementChild.firstElementChild;
 
+const proseMirror = document.querySelector('div.ProseMirror');
+
 var text = '';
 
 function startHelper() {
     addHelperContainer(helperContainer);
     addRuleHelperDivs();
 
-    const proseMirror = document.querySelector('div.ProseMirror');
     if(proseMirror) {
         const observer = new MutationObserver(() => {
             text = getTextFromChildren(proseMirror);
 
             ruleHelperFunctions.forEach((rule) => {
-                if(errorRules.has(rule.id))
+                if(errorRules.has(rule.id) && rule.update)
                     rule.ruleFunction(rule.div.lastElementChild.lastElementChild);
             });
         });
