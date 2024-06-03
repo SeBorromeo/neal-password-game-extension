@@ -195,6 +195,28 @@ function calculateAtomicNumber(div) {
     div.textContent = `Elements: ${result}\nCurrent Sum of Atomic Numbers: ${atomicSum}\nSuggested Elements: ${suggestedElements}`
 }
 
+function autoBold(node) {
+    if(node.nodeType === Node.TEXT_NODE) {
+        let vowelRegex = /[aeiouy]/gi;
+        
+        node.innerHTML = node.textContent.replace(vowelRegex, function(vowel) {
+            console.log(vowel);
+            return `<b>${vowel}</b>`
+        });
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+        for (let child of node.childNodes) {
+            autoBold(child);
+        }
+    }
+}
+
+function offerAutoBold(div) {
+    var button = document.createElement("button");
+    button.innerHTML = "<h1>Bolden</h1>";
+    button.onclick = () => {autoBold(proseMirror)};
+    div.appendChild(button);
+}
+
 function displayRomanNumerals(div) {
     let romanNumerals = searchRomanNumerals(text);
     div.textContent = `Current Roman Numerals: ${romanNumerals}`;
@@ -205,7 +227,7 @@ function removeFireEmoji(node) {
         node.textContent = node.textContent.replace(new RegExp('🔥', 'g'), '');
     } else if (node.nodeType === Node.ELEMENT_NODE) {
         for (let child of node.childNodes) {
-            removeFireEmoji(child, '🔥');
+            removeFireEmoji(child);
         }
     }
 }
@@ -225,12 +247,44 @@ function findYoutubeVideo(div) {
     div.textContent = '';
 }
 
-function displayLettersToSacrifice(div) {
+function findUnusedLetters(text) {
+    let alphabet = new Set('abcdefghijklmnopqrstuvwxyz');
+    text = text.toLowerCase();
 
+    for (let char of text) {
+        if (alphabet.has(char)) {
+            alphabet.delete(char);
+        }
+    }
+
+    return Array.from(alphabet);
+}
+
+function displayLettersToSacrifice(div) {
+    const unusedLetters = findUnusedLetters(text);
+    div.textContent = `Letters currently not used: ${unusedLetters}`;
+}
+
+function rgbToHex(rgb) {
+    let rgbValues = rgb.match(/\d+/g);
+    let r = parseInt(rgbValues[0]);
+    let g = parseInt(rgbValues[1]);
+    let b = parseInt(rgbValues[2]);
+
+    let hex = (component) => {
+        let hexValue = component.toString(16);
+        return hexValue.length === 1 ? '0' + hexValue : hexValue;
+    };
+
+    return '#' + hex(r) + hex(g) + hex(b);
 }
 
 function displayHex(div) {
+    const randomColorDiv = document.querySelector('div.rand-color');
+    const computedStyle = window.getComputedStyle(randomColorDiv);
+    const color = computedStyle.backgroundColor;
 
+    div.textContent = `Hex: ${rgbToHex(color)}\nHINT: Recommended to keep rerolling until you get a Hex without numbers`;
 }
 
 const ruleHelperFunctions = [
@@ -241,6 +295,7 @@ const ruleHelperFunctions = [
     {id: 'moon-phase', ruleNum: 13, ruleFunction: displayMoonPhase},
     {id: 'leap-year', ruleNum: 15, ruleFunction: displayLeapYear},
     {id: 'atomic-number', ruleNum: 18, ruleFunction: calculateAtomicNumber, update: true},
+    {id: 'bold-vowels', ruleNum: 19, ruleFunction: offerAutoBold},
     {id: 'fire', ruleNum: 20, ruleFunction: offerExtinguisher},
     {id: 'hatch', ruleNum: 23, ruleFunction: warnAboutHatchedEgg},
     {id: 'youtube', ruleNum: 24, ruleFunction: findYoutubeVideo},
