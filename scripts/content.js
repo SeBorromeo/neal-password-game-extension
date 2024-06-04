@@ -196,12 +196,11 @@ function calculateAtomicNumber(div) {
 }
 
 function autoBold(node) {
-    if(node.nodeType === Node.TEXT_NODE) {
+    if(node.nodeType === Node.ELEMENT_NODE && node.nodeName === 'P') {
         let vowelRegex = /[aeiouy]/gi;
         
         node.innerHTML = node.textContent.replace(vowelRegex, function(vowel) {
-            console.log(vowel);
-            return `<b>${vowel}</b>`
+            return `<strong>${vowel}</strong>`
         });
     } else if (node.nodeType === Node.ELEMENT_NODE) {
         for (let child of node.childNodes) {
