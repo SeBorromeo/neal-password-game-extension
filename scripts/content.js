@@ -196,7 +196,7 @@ function calculateAtomicNumber(div) {
 }
 
 function autoBold(node) {
-    if(node.nodeType === Node.ELEMENT_NODE && node.nodeName === 'P') {
+    if(node.nodeType === Node.ELEMENT_NODE && !node.hasChildNodes()) {
         let vowelRegex = /[aeiouy]/gi;
         
         node.innerHTML = node.textContent.replace(vowelRegex, function(vowel) {
@@ -220,6 +220,8 @@ function displayRomanNumerals(div) {
     let romanNumerals = searchRomanNumerals(text);
     div.textContent = `Current Roman Numerals: ${romanNumerals}`;
 }
+
+/* <span style="font-family: Wingdings; font-size: 28px"><strong>you</strong>t<strong>u</strong>b<strong>e</strong>.c<strong>o</strong>m/w<strong>a</strong>tch?v=Sp-<strong>Iy</strong>mn06sQ</span> */
 
 function removeFireEmoji(node) {
     if (node.nodeType === Node.TEXT_NODE) {
