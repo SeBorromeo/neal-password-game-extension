@@ -151,6 +151,32 @@ function displayMoonPhase(div) {
     div.textContent = 'Copy/Paste: 🌕🌖🌗🌘🌑🌒🌓🌔'
 }
 
+const countries = ["afghanistan", "albania", "algeria", "andorra", "angola", "antigua and barbuda", "argentina", "armenia", "australia", "austria", "azerbaijan", "bahamas", "bahrain", "bangladesh", "barbados", "belarus", "belgium", "belize", "benin", "bhutan", "bolivia", "bosnia and herzegovina", "botswana", "brazil", "brunei", "bulgaria", "burkina faso", "burundi", "cabo verde", "cambodia", "cameroon", "canada", "central african republic", "chad", "chile", "china", "colombia", "comoros", "congo", "democratic republic of the congo", "costa rica", "croatia", "cuba", "cyprus", "czech republic", "denmark", "djibouti", "dominica", "dominican republic", "east timor", "ecuador", "egypt", "el salvador", "equatorial guinea", "eritrea", "estonia", "eswatini", "ethiopia", "fiji", "finland", "france", "gabon", "gambia", "georgia", "germany", "ghana", "greece", "grenada", "guatemala", "guinea", "guinea-bissau", "guyana", "haiti", "honduras", "hungary", "iceland", "india", "indonesia", "iran", "iraq", "ireland", "israel", "italy", "ivory coast", "jamaica", "japan", "jordan", "kazakhstan", "kenya", "kiribati", "korea", "north korea", "south kosovo", "kuwait", "kyrgyzstan", "laos", "latvia", "lebanon", "lesotho", "liberia", "libya", "liechtenstein", "lithuania", "luxembourg", "madagascar", "malawi", "malaysia", "maldives", "mali", "malta", "marshall islands", "mauritania", "mauritius", "mexico", "micronesia", "moldova", "monaco", "mongolia", "montenegro", "morocco", "mozambique", "myanmar", "namibia", "nauru", "nepal", "netherlands", "new zealand", "nicaragua", "niger", "nigeria", "north macedonia", "norway", "oman", "pakistan", "palau", "palestine", "panama", "papua new guinea", "paraguay", "peru", "philippines", "poland", "portugal", "qatar", "romania", "russia", "rwanda", "saint kitts and nevis", "saint lucia", "saint vincent and the grenadines", "samoa", "san marino", "sao tome and principe", "saudi arabia", "senegal", "serbia", "seychelles", "sierra leone", "singapore", "slovakia", "slovenia", "solomon islands", "somalia", "south africa", "south sudan", "spain", "sri lanka", "sudan", "suriname", "sweden", "switzerland", "syria", "taiwan", "tajikistan", "tanzania", "thailand", "togo", "tonga", "trinidad and tobago", "tunisia", "turkey", "turkmenistan", "tuvalu", "uganda", "ukraine", "united arab emirates", "united kingdom", "united states", "uruguay", "uzbekistan", "vanuatu", "vatican city", "venezuela", "vietnam", "yemen", "zambia", "zimbabwe"];
+
+function bruteForceGeoguess() {
+    var countryTextElement = document.createElement("p");
+    proseMirror.appendChild(countryTextElement);
+
+    let countryFound = false;
+
+    for(let i = 0; i < countries.length; i++) {
+        setTimeout(() => {
+            if(!countryFound) {
+                proseMirror.lastElementChild.textContent = countries[i];
+                if(!errorRules.has('geo')) 
+                    countryFound = true;
+            }   
+        }, 50 * i);
+    }
+}
+
+function findCountry(div) {
+    var button = document.createElement("button");
+    button.innerHTML = "<h1>Brute Force</h1>";
+    button.onclick = () => {bruteForceGeoguess(); button.style.display = 'none'};
+    div.appendChild(button);
+}
+
 function displayLeapYear(div) {
     div.textContent = 'HINT: Recommmended to use \'0\' as the leap year';
 }
@@ -294,6 +320,7 @@ const ruleHelperFunctions = [
     {id: 'captcha', ruleNum: 10, ruleFunction: displayCaptcha, update: true},
     {id: 'wordle', ruleNum: 11, ruleFunction: displayWordle},
     {id: 'moon-phase', ruleNum: 13, ruleFunction: displayMoonPhase},
+    {id: 'geo', ruleNum: 14, ruleFunction: findCountry},
     {id: 'leap-year', ruleNum: 15, ruleFunction: displayLeapYear},
     {id: 'atomic-number', ruleNum: 18, ruleFunction: calculateAtomicNumber, update: true},
     {id: 'bold-vowels', ruleNum: 19, ruleFunction: offerAutoBold},
