@@ -162,11 +162,12 @@ function bruteForceGeoguess() {
     for(let i = 0; i < countries.length; i++) {
         setTimeout(() => {
             if(!countryFound) {
-                proseMirror.lastElementChild.textContent = countries[i];
-                if(!errorRules.has('geo')) 
+                if(!errorRules.has('geo'))
                     countryFound = true;
+                else
+                    proseMirror.lastElementChild.textContent = countries[i];
             }   
-        }, 50 * i);
+        }, 5 * i);
     }
 }
 
