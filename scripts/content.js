@@ -223,7 +223,7 @@ function calculateAtomicNumber(div) {
 }
 
 function autoBold(node) {
-    if(node.nodeType === Node.ELEMENT_NODE && !node.hasChildNodes()) {
+    if(node.nodeType === Node.ELEMENT_NODE && node.childElementCount === 0) {
         let vowelRegex = /[aeiouy]/gi;
         
         node.innerHTML = node.textContent.replace(vowelRegex, function(vowel) {
@@ -275,11 +275,11 @@ function findYoutubeVideo(div) {
     div.textContent = '';
 }
 
-function findUnusedLetters(text) {
-    let alphabet = new Set('abcdefghijklmnopqrstuvwxyz');
-    text = text.toLowerCase();
+function findUnusedLetters() {
+    const alphabetArray = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'];
+    let alphabet = new Set(alphabetArray);
 
-    for (let char of text) {
+    for (let char of text.toLowerCase()) {
         if (alphabet.has(char)) {
             alphabet.delete(char);
         }
@@ -289,7 +289,7 @@ function findUnusedLetters(text) {
 }
 
 function displayLettersToSacrifice(div) {
-    const unusedLetters = findUnusedLetters(text);
+    const unusedLetters = findUnusedLetters();
     div.textContent = `Letters currently not used: ${unusedLetters}`;
 }
 
@@ -328,7 +328,7 @@ const ruleHelperFunctions = [
     {id: 'fire', ruleNum: 20, ruleFunction: offerExtinguisher},
     {id: 'hatch', ruleNum: 23, ruleFunction: warnAboutHatchedEgg},
     {id: 'youtube', ruleNum: 24, ruleFunction: findYoutubeVideo},
-    {id: 'sacrafice', ruleNum: 25, ruleFunction: displayLettersToSacrifice},
+    {id: 'sacrafice', ruleNum: 25, ruleFunction: displayLettersToSacrifice, update: true},
     {id: 'hex', ruleNum: 28, ruleFunction: displayHex, update: true},
 ]
 
